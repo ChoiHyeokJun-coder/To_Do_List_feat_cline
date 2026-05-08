@@ -127,6 +127,65 @@ function DetailPanel({
           </button>
         </div>
 
+        {/* 카테고리 */}
+        <div className="space-y-2">
+          <label className="flex items-center gap-3 text-gray-700 dark:text-gray-300 font-medium">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            카테고리
+          </label>
+          <select
+            value={todo.category || '기타'}
+            onChange={(e) => updateTodo(todo.id, { category: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-ms-blue"
+          >
+            <option value="개인">개인</option>
+            <option value="업무">업무</option>
+            <option value="쇼핑">쇼핑</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+
+        {/* 우선순위 */}
+        <div className="space-y-2">
+          <label className="flex items-center gap-3 text-gray-700 dark:text-gray-300 font-medium">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+            우선순위
+          </label>
+          <select
+            value={todo.priority || 'medium'}
+            onChange={(e) => updateTodo(todo.id, { priority: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-ms-blue"
+          >
+            <option value="low">낮음</option>
+            <option value="medium">보통</option>
+            <option value="high">높음</option>
+          </select>
+        </div>
+
+        {/* 반복 */}
+        <div className="space-y-2">
+          <label className="flex items-center gap-3 text-gray-700 dark:text-gray-300 font-medium">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            반복
+          </label>
+          <select
+            value={todo.recurring || ''}
+            onChange={(e) => updateTodo(todo.id, { recurring: e.target.value || null })}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-ms-blue"
+          >
+            <option value="">반복 안 함</option>
+            <option value="daily">매일</option>
+            <option value="weekly">매주</option>
+            <option value="monthly">매월</option>
+          </select>
+        </div>
+
         {/* Due Date Section */}
         <div className="space-y-2">
           <label className="flex items-center gap-3 text-gray-700 dark:text-gray-300 font-medium">
@@ -146,6 +205,43 @@ function DetailPanel({
             onChange={(e) => updateTodo(todo.id, { dueDate: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-ms-blue"
           />
+        </div>
+
+        {/* 태그 */}
+        <div className="space-y-2">
+          <label className="flex items-center gap-3 text-gray-700 dark:text-gray-300 font-medium">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+            </svg>
+            태그
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {todo.tags?.map((tag, index) => (
+              <span key={index} className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-sm flex items-center gap-1">
+                #{tag}
+                <button
+                  onClick={() => {
+                    const newTags = todo.tags.filter((_, i) => i !== index)
+                    updateTodo(todo.id, { tags: newTags })
+                  }}
+                  className="hover:text-red-600"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+            <button
+              onClick={() => {
+                const tag = prompt('태그 입력:')
+                if (tag && tag.trim()) {
+                  updateTodo(todo.id, { tags: [...(todo.tags || []), tag.trim()] })
+                }
+              }}
+              className="px-2 py-1 border border-dashed border-gray-400 dark:border-gray-600 rounded text-sm text-gray-600 dark:text-gray-400 hover:border-ms-blue hover:text-ms-blue"
+            >
+              + 태그 추가
+            </button>
+          </div>
         </div>
 
         {/* Subtasks Section */}

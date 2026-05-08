@@ -16,6 +16,21 @@ function App() {
   // 현재 보기 모드 ('all': 전체 할 일, 'myday': 나의 하루)
   const [currentView, setCurrentView] = useState('all')
   
+  // 검색어 상태
+  const [searchQuery, setSearchQuery] = useState('')
+  
+  // 정렬 옵션 ('name', 'dueDate', 'createdDate', 'priority')
+  const [sortBy, setSortBy] = useState('createdDate')
+  
+  // 카테고리 목록
+  const [categories, setCategories] = useState(() => {
+    const saved = localStorage.getItem('categories')
+    return saved ? JSON.parse(saved) : ['개인', '업무', '쇼핑', '기타']
+  })
+  
+  // 선택된 카테고리 필터
+  const [selectedCategory, setSelectedCategory] = useState(null)
+  
   // 다크 모드 상태 - LocalStorage에서 불러오기
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode')
@@ -40,11 +55,16 @@ function App() {
   const addTodo = (title) => {
     const newTodo = {
       id: Date.now(),
+      createdAt: new Date().toISOString(), // 생성일
       title,
       completed: false,
       dueDate: null,
       subtasks: [],
       isMyDay: currentView === 'myday', // 나의 하루에서 추가하면 자동으로 isMyDay true
+      category: selectedCategory || '기타', // 카테고리
+      tags: [], // 태그 목록
+      priority: 'medium', // 우선순위: low, medium, high
+      recurring: null, // 반복 설정: null, 'daily', 'weekly', 'monthly'
     }
     setTodos([...todos, newTodo])
   }
@@ -141,10 +161,14 @@ function App() {
     }
   }
 
+  // 할 일 필터링, 검색, 정렬 함수
   const getFilteredTodos = () => {
+    let filtered = todos
+
+    // 뷰 모드에 따른 필터링
     if (currentView === 'myday') {
       const today = new Date().toDateString()
-      return todos.filter(todo => {
+      filtered = filtered.filter(todo => {
         if (todo.isMyDay) return true
         if (todo.dueDate) {
           const dueDate = new Date(todo.dueDate).toDateString()
@@ -153,7 +177,42 @@ function App() {
         return false
       })
     }
-    return todos
+
+    // 카테고리 필터링
+    if (selectedCategory) {
+      filtered = filtered.filter(todo => todo.category === selectedCategory)
+    }
+
+    // 검색어 필터링
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(todo => 
+        todo.title.toLowerCase().includes(query) ||
+        todo.tags?.some(tag => tag.toLowerCase().includes(query))
+      )
+    }
+
+    // 정렬
+    filtered = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.title.localeCompare(b.title)
+        case 'dueDate':
+          if (!a.dueDate && !b.dueDate) return 0
+          if (!a.dueDate) return 1
+          if (!b.dueDate) return -1
+          return new Date(a.dueDate) - new Date(b.dueDate)
+        case 'createdDate':
+          return new Date(b.createdAt || b.id) - new Date(a.createdAt || a.id)
+        case 'priority':
+          const priorityOrder = { high: 0, medium: 1, low: 2 }
+          return (priorityOrder[a.priority || 'medium'] || 1) - (priorityOrder[b.priority || 'medium'] || 1)
+        default:
+          return 0
+      }
+    })
+
+    return filtered
   }
 
   const completeAllTodos = () => {
@@ -200,6 +259,13 @@ function App() {
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         setCurrentView={setCurrentView}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        categories={categories}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
       />
       
       {/* 상세 패널: 선택된 할 일이 있을 때만 표시, 태블릿 이상에서만 표시 */}

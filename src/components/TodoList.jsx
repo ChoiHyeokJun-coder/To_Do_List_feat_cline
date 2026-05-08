@@ -29,10 +29,20 @@ function TodoList({
   deleteAllTodos,
   darkMode,
   setDarkMode,
-  setCurrentView
+  setCurrentView,
+  searchQuery,
+  setSearchQuery,
+  sortBy,
+  setSortBy,
+  categories,
+  selectedCategory,
+  setSelectedCategory
 }) {
   // 할 일 입력 필드의 값을 관리하는 상태
   const [inputValue, setInputValue] = useState('')
+  
+  // 필터/정렬 패널 표시 상태
+  const [showFilters, setShowFilters] = useState(false)
 
   // 폼 제출 시 새로운 할 일 추가
   const handleSubmit = (e) => {
@@ -79,7 +89,81 @@ function TodoList({
           </button>
         </div>
         
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-4">{getTitle()}</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{getTitle()}</h2>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            필터/정렬
+          </button>
+        </div>
+        
+        {/* 검색, 필터, 정렬 패널 */}
+        {showFilters && (
+          <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg space-y-3">
+            {/* 검색 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">검색</label>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="할 일 또는 태그 검색..."
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ms-blue"
+              />
+            </div>
+            
+            {/* 카테고리 필터 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">카테고리</label>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSelectedCategory(null)}
+                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                    !selectedCategory
+                      ? 'bg-ms-blue text-white'
+                      : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
+                  }`}
+                >
+                  전체
+                </button>
+                {categories.map(category => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                      selectedCategory === category
+                        ? 'bg-ms-blue text-white'
+                        : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* 정렬 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">정렬</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ms-blue"
+              >
+                <option value="createdDate">생성일순 (최신)</option>
+                <option value="name">이름순</option>
+                <option value="dueDate">마감일순</option>
+                <option value="priority">우선순위순</option>
+              </select>
+            </div>
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input
             type="text"
